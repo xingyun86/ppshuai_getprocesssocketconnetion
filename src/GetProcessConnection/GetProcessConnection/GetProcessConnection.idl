@@ -1,0 +1,20 @@
+// GetProcessConnection.idl : IDL source for GetProcessConnection.exe
+//
+
+// This file will be processed by the MIDL tool to
+// produce the type library (GetProcessConnection.tlb) and marshalling code.
+
+import "oaidl.idl";
+import "ocidl.idl";
+
+[
+	uuid(810FA6E0-BE6E-4005-80B2-3587469032EC),
+	version(1.0),
+	helpstring("GetProcessConnection 1.0 Type Library")
+]
+library GetProcessConnectionLib
+{
+	importlib("stdole32.tlb");
+	importlib("stdole2.tlb");
+
+};

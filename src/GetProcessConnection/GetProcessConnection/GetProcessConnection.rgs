@@ -1,0 +1,11 @@
+HKCR
+{
+	NoRemove AppID
+	{
+		{E896123A-F0A2-4E2F-B1FF-1862442D8628} = s 'GetProcessConnection'
+		'GetProcessConnection.EXE'
+		{
+			val AppID = s {E896123A-F0A2-4E2F-B1FF-1862442D8628}
+		}
+	}
+}
