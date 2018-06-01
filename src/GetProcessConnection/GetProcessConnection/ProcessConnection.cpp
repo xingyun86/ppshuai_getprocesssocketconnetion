@@ -238,11 +238,13 @@ int CProcessConnection::GetInfo2(DWORD dwOwningId/* = (-1L)*/)
 					szLocalAddr, ntohs(pMibTcpTable2->table[uIdx].dwLocalPort),
 					szRemoteAddr, ntohs(pMibTcpTable2->table[uIdx].dwRemotePort));
 #endif
-				sprintf(szLineData, "进程名称:%ws,进程ID:%ld,本地:%s:%ld,远程:%s:%ld,状态:",
-					ProcessPidToName(tProcessName, pMibTcpTable2->table[uIdx].dwOwningPid),
-					pMibTcpTable2->table[uIdx].dwOwningPid,
-					szLocalAddr, ntohs(pMibTcpTable2->table[uIdx].dwLocalPort),
-					szRemoteAddr, ntohs(pMibTcpTable2->table[uIdx].dwRemotePort));
+				TCPTABLE tt = { 0 };
+				USES_CONVERSION;
+				strcpy(tt.czProcessName, W2A(ProcessPidToName(tProcessName, pMibTcpTable2->table[uIdx].dwOwningPid)));
+				tt.dwProcessId = pMibTcpTable2->table[uIdx].dwOwningPid;
+				sprintf(tt.szLocalPort, "%s:%ld", szLocalAddr, ntohs(pMibTcpTable2->table[uIdx].dwLocalPort));
+				sprintf(tt.szRemotePort, "%s:%ld", szRemoteAddr, ntohs(pMibTcpTable2->table[uIdx].dwRemotePort));
+				
 				// 状态
 				switch (pMibTcpTable2->table[uIdx].dwState)
 				{
@@ -328,8 +330,8 @@ int CProcessConnection::GetInfo2(DWORD dwOwningId/* = (-1L)*/)
 #if defined(DEBUG) || defined(_DEBUG)
 				printf("\n==============================================\n");
 #endif
-				strcat(szLineData, szStatus);
-				m_tcp_list.push_back(szLineData);
+				strcpy(tt.szStatus, szStatus);
+				m_tcp_list.push_back(tt);
 			}
 		}
 
@@ -353,15 +355,17 @@ int CProcessConnection::GetInfo2(DWORD dwOwningId/* = (-1L)*/)
 					pMibUdpTable2->table[uIdx].dwOwningPid,
 					szLocalAddr, ntohs(pMibUdpTable2->table[uIdx].dwLocalPort));
 #endif
-				sprintf(szLineData, "进程名称:%ws,进程ID:%ld,本地:%s:%ld",
-					ProcessPidToName(tProcessName, pMibUdpTable2->table[uIdx].dwOwningPid),
-					pMibUdpTable2->table[uIdx].dwOwningPid,
-					szLocalAddr, ntohs(pMibUdpTable2->table[uIdx].dwLocalPort));
+				UDPTABLE ut = { 0 };
+				USES_CONVERSION;
+				strcpy(ut.czProcessName, W2A(ProcessPidToName(tProcessName, pMibUdpTable2->table[uIdx].dwOwningPid)));
+				ut.dwProcessId = pMibUdpTable2->table[uIdx].dwOwningPid;
+				sprintf(ut.szLocalPort, "%s:%ld", szLocalAddr, ntohs(pMibUdpTable2->table[uIdx].dwLocalPort));
+
 
 #if defined(DEBUG) || defined(_DEBUG)
 				printf("\n==============================================\n");
 #endif
-				m_udp_list.push_back(szLineData);
+				m_udp_list.push_back(ut);
 			}
 		}
 

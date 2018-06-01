@@ -48,6 +48,40 @@ LRESULT CMainDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam
 	GetDlgItem(IDOK).SetWindowText(_T("刷新"));
 	GetDlgItem(IDCANCEL).SetWindowText(_T("关闭"));
 	GetDlgItem(ID_APP_ABOUT).SetWindowText(_T("关于"));
+	
+	CListViewCtrl listViewTcp = (CListViewCtrl)GetDlgItem(IDC_LIST_TCP);
+	LV_COLUMN lvcTcp = { 0 };
+	
+	while (listViewTcp.DeleteColumn(0));
+
+	lvcTcp.cx = 100;
+	lvcTcp.iSubItem = 0;
+	lvcTcp.mask = LVCF_TEXT | LVCF_WIDTH;
+	lvcTcp.pszText = _T("进程名称");
+	listViewTcp.InsertColumn(listViewTcp.GetHeader().GetItemCount(), &lvcTcp);
+	lvcTcp.pszText = _T("进程ID");
+	listViewTcp.InsertColumn(listViewTcp.GetHeader().GetItemCount(), &lvcTcp);
+	lvcTcp.pszText = _T("本地TCP连接");
+	listViewTcp.InsertColumn(listViewTcp.GetHeader().GetItemCount(), &lvcTcp);
+	lvcTcp.pszText = _T("远程连接");
+	listViewTcp.InsertColumn(listViewTcp.GetHeader().GetItemCount(), &lvcTcp);
+	lvcTcp.pszText = _T("状态");
+	listViewTcp.InsertColumn(listViewTcp.GetHeader().GetItemCount(), &lvcTcp);
+
+	CListViewCtrl listViewUdp = (CListViewCtrl)GetDlgItem(IDC_LIST_UDP);
+	LV_COLUMN lvcUdp = { 0 };
+	while (listViewUdp.DeleteColumn(0));
+	
+	lvcUdp.cx = 100;
+	lvcUdp.mask = LVCF_TEXT | LVCF_WIDTH;
+	lvcUdp.iSubItem = 0;
+
+	lvcUdp.pszText = _T("进程名称");
+	listViewUdp.InsertColumn(listViewUdp.GetHeader().GetItemCount(), &lvcUdp);
+	lvcUdp.pszText = _T("进程ID");
+	listViewUdp.InsertColumn(listViewUdp.GetHeader().GetItemCount(), &lvcUdp);
+	lvcUdp.pszText = _T("本地UDP连接");
+	listViewUdp.InsertColumn(listViewUdp.GetHeader().GetItemCount(), &lvcUdp);
 
 	SendMessage(WM_COMMAND, IDOK);
 
@@ -92,37 +126,61 @@ LRESULT CMainDlg::OnOK(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /
 	}
 	pc.GetInfo2(dwPid);
 
-	RECT rc = { 0 };
-	GetClientRect(&rc);
-
+	USES_CONVERSION;
+	
 	CListViewCtrl listViewTcp = (CListViewCtrl)GetDlgItem(IDC_LIST_TCP);
-	LV_COLUMN lvcTcp = { 0 };
-	lvcTcp.cx = rc.right - rc.left - GetSystemMetrics(SM_CXVSCROLL);
-	lvcTcp.iSubItem = 0;
-	lvcTcp.mask = LVCF_TEXT | LVCF_WIDTH;
-	lvcTcp.pszText = _T("TCP连接列表信息");
-	while (listViewTcp.DeleteColumn(0));
-	listViewTcp.InsertColumn(0, &lvcTcp);
+
 	listViewTcp.DeleteAllItems();
 	for (auto it : pc.m_tcp_list)
 	{
-		USES_CONVERSION;
-		listViewTcp.AddItem(listViewTcp.GetItemCount(), 0, A2W(it.c_str()));
+		LV_ITEM lvi = { 0 };
+		_TCHAR tzPid[64] = { 0 };
+
+		lvi.iItem = listViewTcp.GetItemCount();
+		lvi.iSubItem = 0;
+		lvi.mask = LVIF_TEXT;
+
+		listViewTcp.AddItem(lvi.iItem, lvi.iSubItem, A2W(it.czProcessName));
+
+		lvi.iSubItem++;
+		wsprintf(tzPid, _T("%ld"), it.dwProcessId);
+		lvi.pszText = tzPid;
+		listViewTcp.SetItem(&lvi);
+
+		lvi.iSubItem++;
+		lvi.pszText = A2W(it.szLocalPort);
+		listViewTcp.SetItem(&lvi);
+
+		lvi.iSubItem++;
+		lvi.pszText = A2W(it.szRemotePort);
+		listViewTcp.SetItem(&lvi);
+
+		lvi.iSubItem++;
+		lvi.pszText = A2W(it.szStatus);
+		listViewTcp.SetItem(&lvi);
 	}
 
 	CListViewCtrl listViewUdp = (CListViewCtrl)GetDlgItem(IDC_LIST_UDP);
-	LV_COLUMN lvcUdp = { 0 };
-	lvcUdp.cx = rc.right - rc.left - GetSystemMetrics(SM_CXVSCROLL);
-	lvcUdp.iSubItem = 0;
-	lvcUdp.mask = LVCF_TEXT | LVCF_WIDTH;
-	lvcUdp.pszText = _T("UDP连接列表信息");
-	while (listViewUdp.DeleteColumn(0));
-	listViewUdp.InsertColumn(0, &lvcUdp);
 	listViewUdp.DeleteAllItems();
 	for (auto it : pc.m_udp_list)
 	{
-		USES_CONVERSION;
-		listViewUdp.AddItem(listViewUdp.GetItemCount(), 0, A2W(it.c_str()));
+		LV_ITEM lvi = { 0 };
+		_TCHAR tzPid[64] = { 0 };
+
+		lvi.iItem = listViewUdp.GetItemCount();
+		lvi.iSubItem = 0;
+		lvi.mask = LVIF_TEXT;
+		
+		listViewUdp.AddItem(lvi.iItem, lvi.iSubItem, A2W(it.czProcessName));
+
+		lvi.iSubItem++;
+		wsprintf(tzPid, _T("%ld"), it.dwProcessId);
+		lvi.pszText = tzPid;
+		listViewUdp.SetItem(&lvi);
+
+		lvi.iSubItem++;
+		lvi.pszText = A2W(it.szLocalPort);
+		listViewUdp.SetItem(&lvi);
 	}
 
 	return 0;
@@ -147,11 +205,11 @@ void CMainDlg::CloseDialog(int nVal)
 LRESULT CMainDlg::OnSize(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
 {
 	// TODO: Add your message handler code here and/or call default
-	RECT rcWindow = { 0 };	
+	RECT rcWindow = { 0 };
 	RECT rc = { 0 };
 	int nLastBottom = 0;
 	int nLastLeft = 0;
-	
+
 	GetClientRect(&rcWindow);
 
 	GetDlgItem(IDOK).GetClientRect(&rc);
@@ -201,15 +259,23 @@ LRESULT CMainDlg::OnSize(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BO
 	rc.bottom = (rcWindow.bottom - 12) / 2 + rc.top;
 	GetDlgItem(IDC_LIST_TCP).MoveWindow(&rc, FALSE);
 	nLastBottom = rc.bottom;
-	
+	for (UINT uIdx = 0; uIdx < ((CListViewCtrl)GetDlgItem(IDC_LIST_TCP)).GetHeader().GetItemCount(); uIdx++)
+	{
+		((CListViewCtrl)GetDlgItem(IDC_LIST_TCP)).SetColumnWidth(uIdx, (rc.right - rc.left - GetSystemMetrics(SM_CXVSCROLL) - 4) / ((CListViewCtrl)GetDlgItem(IDC_LIST_TCP)).GetHeader().GetItemCount());
+	}
+
 	rc.left = 4;
 	rc.top = 4 + nLastBottom;
 	rc.right = nLastLeft - 4;
 	rc.bottom = rcWindow.bottom - 4;
 	GetDlgItem(IDC_LIST_UDP).MoveWindow(&rc, FALSE);
+	for (UINT uIdx = 0; uIdx < ((CListViewCtrl)GetDlgItem(IDC_LIST_UDP)).GetHeader().GetItemCount(); uIdx++)
+	{
+		((CListViewCtrl)GetDlgItem(IDC_LIST_UDP)).SetColumnWidth(uIdx, (rc.right - rc.left - GetSystemMetrics(SM_CXVSCROLL) - 4) / ((CListViewCtrl)GetDlgItem(IDC_LIST_TCP)).GetHeader().GetItemCount());
+	}
 
 	Invalidate();
 	UpdateWindow();
-	
+
 	return 0;
 }
