@@ -43,6 +43,7 @@ LRESULT CMainDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam
 	//启动控制台
 	StartConsole();
 #endif
+	SetWindowText(_T("进程TCP/UDP连接查看工具"));
 	GetDlgItem(IDC_STATIC_PID).SetWindowText(_T("选择PID"));
 	GetDlgItem(IDC_EDIT_PID).SetWindowText(_T(""));
 	GetDlgItem(IDOK).SetWindowText(_T("刷新"));
